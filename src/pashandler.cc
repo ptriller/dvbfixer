@@ -43,5 +43,6 @@ void  PASHandler::handle(TSPacket *packet) {
   std::cout << "Program: " << pas->entry(0)->program_number() << " PID: " << pas->entry(0)->PID() << std::endl;
   program = pas->entry(0)->program_number();
   pid = pas->entry(0)->PID();
+  out.write((char *)packet,188);
 }
 

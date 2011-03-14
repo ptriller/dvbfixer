@@ -3,12 +3,17 @@
 
 #include "config.h"
 #include "packetreader.h"
+#include <ostream>
 
 class PMTHandler: public TSPacketHandler {
 public:
-  uint16_t pid;
 
-  PMTHandler(uint16_t pid):pid(pid) {}
+  std::set<uint16_t> streams;
+
+  uint16_t pid;
+  std::ostream &out;
+
+  PMTHandler(uint16_t pid, std::ostream &out):pid(pid),out(out) {}
 
   virtual bool canHandle(TSPacket *);
   

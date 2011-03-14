@@ -50,7 +50,7 @@ am__installdirs = "$(DESTDIR)$(dvbfixerdir)" \
 PROGRAMS = $(dvbfixer_PROGRAMS)
 am_dvbfixer_OBJECTS = dvbfixer.$(OBJEXT) stream.$(OBJEXT) \
 	pashandler.$(OBJEXT) pmthandler.$(OBJEXT) \
-	packetreader.$(OBJEXT)
+	packetreader.$(OBJEXT) crc.$(OBJEXT) outhandler.$(OBJEXT)
 dvbfixer_OBJECTS = $(am_dvbfixer_OBJECTS)
 dvbfixer_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -179,7 +179,7 @@ top_srcdir = @top_srcdir@
 dvbfixerdir = ../
 dvbfixer_HEADERS = stream.h packetreader.h pashandler.h pmthandler.h
 dvbfixer_SOURCES = dvbfixer.cc stream.cc pashandler.cc pmthandler.cc \
-		 packetreader.cc
+		 packetreader.cc crc.cc outhandler.cc
 
 all: all-am
 
@@ -262,7 +262,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dvbfixer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/outhandler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/packetreader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pashandler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pmthandler.Po@am__quote@
