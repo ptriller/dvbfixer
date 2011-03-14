@@ -14,7 +14,7 @@ class StreamReader {
 };
 
 
-class FileStreamReader {
+class FileStreamReader :public StreamReader {
  private:
   std::fstream *stream;
 

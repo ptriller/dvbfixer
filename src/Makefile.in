@@ -33,9 +33,9 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-splitter_PROGRAMS = splitter$(EXEEXT)
+dvbfixer_PROGRAMS = dvbfixer$(EXEEXT)
 subdir = src
-DIST_COMMON = $(splitter_HEADERS) $(srcdir)/Makefile.am \
+DIST_COMMON = $(dvbfixer_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -45,28 +45,25 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__installdirs = "$(DESTDIR)$(splitterdir)" \
-	"$(DESTDIR)$(splitterdir)"
-PROGRAMS = $(splitter_PROGRAMS)
-am_splitter_OBJECTS = main.$(OBJEXT) stream.$(OBJEXT) \
+am__installdirs = "$(DESTDIR)$(dvbfixerdir)" \
+	"$(DESTDIR)$(dvbfixerdir)"
+PROGRAMS = $(dvbfixer_PROGRAMS)
+am_dvbfixer_OBJECTS = dvbfixer.$(OBJEXT) stream.$(OBJEXT) \
+	pashandler.$(OBJEXT) pmthandler.$(OBJEXT) \
 	packetreader.$(OBJEXT)
-splitter_OBJECTS = $(am_splitter_OBJECTS)
-splitter_LDADD = $(LDADD)
+dvbfixer_OBJECTS = $(am_dvbfixer_OBJECTS)
+dvbfixer_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
-COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
-	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-CCLD = $(CC)
-LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-SOURCES = $(splitter_SOURCES)
-DIST_SOURCES = $(splitter_SOURCES)
+SOURCES = $(dvbfixer_SOURCES)
+DIST_SOURCES = $(dvbfixer_SOURCES)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -88,7 +85,7 @@ am__nobase_list = $(am__nobase_strip_setup); \
 am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-HEADERS = $(splitter_HEADERS)
+HEADERS = $(dvbfixer_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -179,13 +176,15 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-splitterdir = ../
-splitter_HEADERS = stream.h packetreader.h
-splitter_SOURCES = main.c stream.cc packetreader.cc
+dvbfixerdir = ../
+dvbfixer_HEADERS = stream.h packetreader.h pashandler.h pmthandler.h
+dvbfixer_SOURCES = dvbfixer.cc stream.cc pashandler.cc pmthandler.cc \
+		 packetreader.cc
+
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .cc .o .obj
+.SUFFIXES: .cc .o .obj
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -216,10 +215,10 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
-install-splitterPROGRAMS: $(splitter_PROGRAMS)
+install-dvbfixerPROGRAMS: $(dvbfixer_PROGRAMS)
 	@$(NORMAL_INSTALL)
-	test -z "$(splitterdir)" || $(MKDIR_P) "$(DESTDIR)$(splitterdir)"
-	@list='$(splitter_PROGRAMS)'; test -n "$(splitterdir)" || list=; \
+	test -z "$(dvbfixerdir)" || $(MKDIR_P) "$(DESTDIR)$(dvbfixerdir)"
+	@list='$(dvbfixer_PROGRAMS)'; test -n "$(dvbfixerdir)" || list=; \
 	for p in $$list; do echo "$$p $$p"; done | \
 	sed 's/$(EXEEXT)$$//' | \
 	while read p p1; do if test -f $$p; \
@@ -236,26 +235,26 @@ install-splitterPROGRAMS: $(splitter_PROGRAMS)
 	while read type dir files; do \
 	    if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
 	    test -z "$$files" || { \
-	      echo " $(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) $$files '$(DESTDIR)$(splitterdir)$$dir'"; \
-	      $(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) $$files "$(DESTDIR)$(splitterdir)$$dir" || exit $$?; \
+	      echo " $(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) $$files '$(DESTDIR)$(dvbfixerdir)$$dir'"; \
+	      $(INSTALL_PROGRAM_ENV) $(INSTALL_PROGRAM) $$files "$(DESTDIR)$(dvbfixerdir)$$dir" || exit $$?; \
 	    } \
 	; done
 
-uninstall-splitterPROGRAMS:
+uninstall-dvbfixerPROGRAMS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(splitter_PROGRAMS)'; test -n "$(splitterdir)" || list=; \
+	@list='$(dvbfixer_PROGRAMS)'; test -n "$(dvbfixerdir)" || list=; \
 	files=`for p in $$list; do echo "$$p"; done | \
 	  sed -e 'h;s,^.*/,,;s/$(EXEEXT)$$//;$(transform)' \
 	      -e 's/$$/$(EXEEXT)/' `; \
 	test -n "$$list" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(splitterdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(splitterdir)" && rm -f $$files
+	echo " ( cd '$(DESTDIR)$(dvbfixerdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(dvbfixerdir)" && rm -f $$files
 
-clean-splitterPROGRAMS:
-	-test -z "$(splitter_PROGRAMS)" || rm -f $(splitter_PROGRAMS)
-splitter$(EXEEXT): $(splitter_OBJECTS) $(splitter_DEPENDENCIES) 
-	@rm -f splitter$(EXEEXT)
-	$(CXXLINK) $(splitter_OBJECTS) $(splitter_LDADD) $(LIBS)
+clean-dvbfixerPROGRAMS:
+	-test -z "$(dvbfixer_PROGRAMS)" || rm -f $(dvbfixer_PROGRAMS)
+dvbfixer$(EXEEXT): $(dvbfixer_OBJECTS) $(dvbfixer_DEPENDENCIES) 
+	@rm -f dvbfixer$(EXEEXT)
+	$(CXXLINK) $(dvbfixer_OBJECTS) $(dvbfixer_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -263,23 +262,11 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dvbfixer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/packetreader.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pashandler.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pmthandler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stream.Po@am__quote@
-
-.c.o:
-@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(COMPILE) -c $<
-
-.c.obj:
-@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -294,26 +281,26 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
-install-splitterHEADERS: $(splitter_HEADERS)
+install-dvbfixerHEADERS: $(dvbfixer_HEADERS)
 	@$(NORMAL_INSTALL)
-	test -z "$(splitterdir)" || $(MKDIR_P) "$(DESTDIR)$(splitterdir)"
-	@list='$(splitter_HEADERS)'; test -n "$(splitterdir)" || list=; \
+	test -z "$(dvbfixerdir)" || $(MKDIR_P) "$(DESTDIR)$(dvbfixerdir)"
+	@list='$(dvbfixer_HEADERS)'; test -n "$(dvbfixerdir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(splitterdir)'"; \
-	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(splitterdir)" || exit $$?; \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(dvbfixerdir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(dvbfixerdir)" || exit $$?; \
 	done
 
-uninstall-splitterHEADERS:
+uninstall-dvbfixerHEADERS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(splitter_HEADERS)'; test -n "$(splitterdir)" || list=; \
+	@list='$(dvbfixer_HEADERS)'; test -n "$(dvbfixerdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(splitterdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(splitterdir)" && rm -f $$files
+	echo " ( cd '$(DESTDIR)$(dvbfixerdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(dvbfixerdir)" && rm -f $$files
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -401,7 +388,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(PROGRAMS) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(splitterdir)" "$(DESTDIR)$(splitterdir)"; do \
+	for dir in "$(DESTDIR)$(dvbfixerdir)" "$(DESTDIR)$(dvbfixerdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -431,7 +418,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-splitterPROGRAMS mostlyclean-am
+clean-am: clean-dvbfixerPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -451,7 +438,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-splitterHEADERS install-splitterPROGRAMS
+install-data-am: install-dvbfixerHEADERS install-dvbfixerPROGRAMS
 
 install-dvi: install-dvi-am
 
@@ -496,24 +483,24 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-splitterHEADERS uninstall-splitterPROGRAMS
+uninstall-am: uninstall-dvbfixerHEADERS uninstall-dvbfixerPROGRAMS
 
 .MAKE: install-am install-strip
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-splitterPROGRAMS ctags distclean distclean-compile \
-	distclean-generic distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-splitterHEADERS \
-	install-splitterPROGRAMS install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
+.PHONY: CTAGS GTAGS all all-am check check-am clean \
+	clean-dvbfixerPROGRAMS clean-generic ctags distclean \
+	distclean-compile distclean-generic distclean-tags distdir dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-dvbfixerHEADERS \
+	install-dvbfixerPROGRAMS install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-splitterHEADERS \
-	uninstall-splitterPROGRAMS
+	uninstall-am uninstall-dvbfixerHEADERS \
+	uninstall-dvbfixerPROGRAMS
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
