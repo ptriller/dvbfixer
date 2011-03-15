@@ -29,6 +29,7 @@ struct PMTTable {
   uint8_t pcr_pid() { uint16_t r = (_data[8] & 0x1f) << 8; return r | _data[9]; }
   uint8_t reserved4() { return (_data[10] & 0xf0) >> 4; }
   uint16_t program_info_length() { uint16_t r = (_data[10] & 0x0f) << 8; return r | _data[11]; }
+
   PMTEntry *firstPMT() {  
     uint8_t *e = _data+12+program_info_length(); 
     return e < _data+section_length() ? (PMTEntry *)e : NULL; 
@@ -47,11 +48,29 @@ bool PMTHandler::canHandle(TSPacket *packet) {
 }
   
 void PMTHandler::handle(TSPacket *packet) {
+  uint8_t newblock[188];
   PMTTable *pmt = (PMTTable *) (packet->data + packet->data[0] + 1 );
   PMTEntry *entry = pmt->firstPMT();
+  streams.clear();
+  streams.insert(pmt->pcr_pid());
   std::cout << "PCR: " << (unsigned int)pmt->pcr_pid() << std::endl;
   while(entry != NULL) {
     std::cout << "Type: " << (int)entry->stream_type() << " PID: " << entry->elementary_PID() << std::endl;
+    switch((unsigned int)entry->stream_type()) {
+    case 0x01:
+    case 0x02:
+    case 0x03:
+    case 0x04:
+    case 0x0f:
+    case 0x10:
+    case 0x11:
+    case 0x1b:
+      streams.insert(entry->elementary_PID());
+      break;
+    default:
+      break;
+    }
     entry = pmt->nextPMT(entry);
   }
+  
 }
