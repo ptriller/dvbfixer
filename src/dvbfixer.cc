@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  std::fstream out(argv[2], std::fstream::out);
+  std::fstream out(argv[2], std::fstream::out|std::fstream::binary);
   FileStreamReader *reader = new FileStreamReader(argv[1]);
 
   TSPacketReader *tsreader = new TSPacketReader(reader);
