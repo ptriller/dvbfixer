@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
     std::cerr << "No Program Association Table found !" << std::endl;
     return -1;
   }
+  //  return 0;
   PMTHandler *pmt = new PMTHandler(pas->pid,out);
   OUTHandler *output = new OUTHandler(pmt,out);
   tsreader->unregisterPacketHander(pas);

@@ -1,7 +1,6 @@
 #include "config.h"
 #include "packetreader.h"
 #include "stream.h"
-#include <stdexcept>
 #include <algorithm>
 #include <iterator>
 #include <iostream>
@@ -61,7 +60,7 @@ bool TSPacketReader::readPacket() {
       //      std::cout << "check streak" << std::endl;
       for(unsigned int i = 0; i < 4; ++i) {
 	if(queue.size() >= (1+i)*BLOCK_SIZE && queue[i*BLOCK_SIZE] != 0x47) {
-	  std::cout << "Bad byte" << std::endl;
+	  //	  std::cout << "Bad byte" << std::endl;
 	  good = false;
 	  break;
 	}
@@ -129,7 +128,14 @@ void TSPacketReader::emitEvents(unsigned char *block) {
 
   for(std::set<TSPacketHandler *>::iterator it = handlers.begin();
       it != handlers.end();++it) {
-    if((*it)->canHandle(&packet)) (*it)->handle(&packet);
+    try {
+      if((*it)->canHandle(&packet)) (*it)->handle(&packet);
+    } catch(std::invalid_argument &e) {
+      std::cout << "Invalid packet, rewind." << std::endl;
+      streak = 0;
+      for(uint8_t *b = block+187; b != block;--b) queue.push_front(*b);
+      //      std::reverse_copy(block,block+188, std::front_inserter(queue) );
+    }
   }
 }
 

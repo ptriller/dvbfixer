@@ -6,8 +6,10 @@
 #include <deque>
 #include <vector>
 #include <set>
+#include <stdexcept>
 #include <stdint.h>
 class StreamReader;
+
 
 
 struct TSPacketHeader {

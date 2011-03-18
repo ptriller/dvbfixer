@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-unsigned int crc32(const uint8_t *d, unsigned int len, unsigned int crc);
+unsigned int crc32(const uint8_t *d, unsigned int len, unsigned int crc=0xffffffff);
 
 
 #endif // _CRC_H_

@@ -1,6 +1,8 @@
 
 
 #include "pashandler.h"
+#include "crc.h"
+
 #include <iostream>
 
 struct PASEntry {
@@ -24,6 +26,13 @@ struct PASTable {
   uint8_t section_number() { return _data[6]; }
   uint8_t last_section_number() { return _data[7]; }
   PASEntry *entry(uint8_t i) { return (PASEntry *)(&_data[8+4*i]); }
+  uint32_t crc32() {
+    int offset = section_length()-1;
+    uint32_t crc = _data[offset++];
+    crc = (crc << 8) | _data[offset++];
+    crc = (crc << 8) | _data[offset++];
+    return (crc << 8) |_data[offset++];
+  }
 };
 
 
@@ -41,8 +50,15 @@ void  PASHandler::handle(TSPacket *packet) {
   std::cout << "Table: " << (int)pas->table_id() << " Syn: " << pas->section_syntax_indicator();
   std::cout << " Zero: " << pas->zero() << " SecLen: " << pas->section_length() << std::endl;
   std::cout << "Program: " << pas->entry(0)->program_number() << " PID: " << pas->entry(0)->PID() << std::endl;
+  std::cout << "CRC: 0x" << std::hex << pas->crc32() <<std::endl;
+  unsigned int crc1 = crc32(pas->_data, pas->section_length()-1);
+
+  std::cout << "CRC1: 0x" << std::hex << crc1 << std::dec << std::endl;
+  if(crc1 != pas->crc32()) {
+    throw std::invalid_argument("CRC Error in PAS packet !");
+  }
+
   program = pas->entry(0)->program_number();
   pid = pas->entry(0)->PID();
   out.write((char *)packet,188);
 }
-

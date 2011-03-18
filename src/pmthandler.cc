@@ -1,4 +1,6 @@
 #include "pmthandler.h"
+
+#include "crc.h"
 #include <iostream>
 
 
@@ -19,6 +21,7 @@ struct PMTTable {
   bool zero() { return (_data[1] & 0x40) != 0; }
   uint8_t reserved() { return (_data[1] & 0x30) >> 4; }
   uint16_t section_length() { uint16_t r = (_data[1] & 0x0f) << 8; return r | _data[2]; }
+  void section_length(uint16_t len) { _data[2] = (uint8_t)(len & 0x00ff); _data[1] = ((len >> 8) & 0x0f) | (_data[1] & 0xf0); }
   uint16_t program_number() { uint16_t r = _data[3] << 8; return r | _data[4]; }
   uint8_t reserved2() { return (_data[5] & 0xc0) >> 6; }
   uint8_t version_number() { return (_data[5] & 0x3e) >> 1; }
@@ -29,6 +32,14 @@ struct PMTTable {
   uint8_t pcr_pid() { uint16_t r = (_data[8] & 0x1f) << 8; return r | _data[9]; }
   uint8_t reserved4() { return (_data[10] & 0xf0) >> 4; }
   uint16_t program_info_length() { uint16_t r = (_data[10] & 0x0f) << 8; return r | _data[11]; }
+  void program_info_length(uint16_t len) { _data[11] = (uint8_t)(len & 0x00ff); _data[10] = ((len >> 8) % 0x0f) | (_data[10] & 0xf0); }
+  uint32_t crc32() {
+    int offset = section_length()-1;
+    uint32_t crc = _data[offset++];
+    crc = (crc << 8) | _data[offset++];
+    crc = (crc << 8) | _data[offset++];
+    return (crc << 8) |_data[offset++];
+  }
 
   PMTEntry *firstPMT() {  
     uint8_t *e = _data+12+program_info_length(); 
@@ -49,13 +60,27 @@ bool PMTHandler::canHandle(TSPacket *packet) {
   
 void PMTHandler::handle(TSPacket *packet) {
   uint8_t newblock[188];
+  
   PMTTable *pmt = (PMTTable *) (packet->data + packet->data[0] + 1 );
+
+  for(int i = 0; i < 12+pmt->program_info_length();++i) newblock[i] = packet->data[i];
+  
+  uint8_t *offset = packet->data+12+pmt->program_info_length();
   PMTEntry *entry = pmt->firstPMT();
   streams.clear();
   streams.insert(pmt->pcr_pid());
+  unsigned int crc1 = crc32(pmt->_data, pmt->section_length()-1);
+  std::cout << "CRC: 0x" << std::hex << pmt->crc32() << std::dec << std::endl;
+  std::cout << "Info len: " << pmt->program_info_length() << std::endl;
+  std::cout << "CRC1: 0x" << std::hex << crc1 << std::dec << std::endl;
+  if(crc1 != pmt->crc32()) {
+    throw std::invalid_argument("CRC Error in PAS packet !");
+  }
+  
   std::cout << "PCR: " << (unsigned int)pmt->pcr_pid() << std::endl;
   while(entry != NULL) {
     std::cout << "Type: " << (int)entry->stream_type() << " PID: " << entry->elementary_PID() << std::endl;
+    uint16_t len=0;
     switch((unsigned int)entry->stream_type()) {
     case 0x01:
     case 0x02:
@@ -66,11 +91,13 @@ void PMTHandler::handle(TSPacket *packet) {
     case 0x11:
     case 0x1b:
       streams.insert(entry->elementary_PID());
+      len = 5+entry->ES_info_length();
+      for(int i = 0; i < len;++i) *(offset++) = entry->_data[i];
       break;
     default:
       break;
     }
     entry = pmt->nextPMT(entry);
   }
-  
+  offset - pmt->_data +1
 }
