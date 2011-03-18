@@ -2,7 +2,7 @@
 
 #include "crc.h"
 #include <iostream>
-
+#include <string.h>
 
 struct PMTEntry {
   uint8_t _data[184];
@@ -41,6 +41,14 @@ struct PMTTable {
     return (crc << 8) |_data[offset++];
   }
 
+  void crc32(uint32_t crc) {
+    int offset = section_length()+2;
+    _data[offset--] = crc & 0xff;
+    _data[offset--] = (crc >> 8)  & 0xff;
+    _data[offset--] = (crc >> 16) & 0xff;
+    _data[offset--] = (crc >> 24) & 0xff;
+  }
+
   PMTEntry *firstPMT() {  
     uint8_t *e = _data+12+program_info_length(); 
     return e < _data+section_length() ? (PMTEntry *)e : NULL; 
@@ -63,9 +71,13 @@ void PMTHandler::handle(TSPacket *packet) {
   
   PMTTable *pmt = (PMTTable *) (packet->data + packet->data[0] + 1 );
 
-  for(int i = 0; i < 12+pmt->program_info_length();++i) newblock[i] = packet->data[i];
+  memcpy(newblock,packet->_data,188);
+  TSPacket newpacket;
+  TSPacketReader::parseBlock(newblock,newpacket);
+  PMTTable *newpmt = (PMTTable *) (newpacket.data + newpacket.data[0] + 1 );
   
-  uint8_t *offset = packet->data+12+pmt->program_info_length();
+  uint16_t newsize = 9;
+  uint8_t *newentry = (uint8_t *)pmt->firstPMT();
   PMTEntry *entry = pmt->firstPMT();
   streams.clear();
   streams.insert(pmt->pcr_pid());
@@ -92,12 +104,15 @@ void PMTHandler::handle(TSPacket *packet) {
     case 0x1b:
       streams.insert(entry->elementary_PID());
       len = 5+entry->ES_info_length();
-      for(int i = 0; i < len;++i) *(offset++) = entry->_data[i];
+      for(int i = 0; i < len;++i) *(newentry++) = entry->_data[i];
+      newsize += len;
       break;
     default:
       break;
     }
     entry = pmt->nextPMT(entry);
   }
-  offset - pmt->_data +1
+  newpmt->section_length(newsize+4);
+  newpmt->crc32(crc32(newpmt->_data, newpmt->section_length()-1));
+  out.write((char *)newblock,188);
 }

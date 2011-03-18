@@ -37,8 +37,10 @@ struct TSAdaptationField {
 
 
 struct TSPacket {
-  struct TSPacketHeader *header;
-
+  union {
+    struct TSPacketHeader *header;
+    uint8_t *_data;
+  };
   
   TSAdaptationField * adaptation_field;
 
@@ -67,7 +69,7 @@ class TSPacketReader {
   std::set<TSPacketHandler *> handlers;
 
 
-  void emitEvents(unsigned char *block);
+  void emitEvents(uint8_t *block);
 
  public:
 
@@ -82,6 +84,8 @@ class TSPacketReader {
   void unregisterPacketHander(TSPacketHandler *);
 
   bool fillBuffer();
+
+  static void parseBlock(uint8_t *block, TSPacket &packet);
 };
 
 

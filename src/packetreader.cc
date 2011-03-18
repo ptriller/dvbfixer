@@ -108,24 +108,9 @@ bool TSPacketReader::fillBuffer() {
 }
 
 
-void TSPacketReader::emitEvents(unsigned char *block) {
+void TSPacketReader::emitEvents(uint8_t *block) {
   TSPacket packet;
-  packet.header = (TSPacketHeader *)block;
-  if((packet.header->adaptation_field_control() & 0x02) != 0) {
-    packet.adaptation_field = (TSAdaptationField *)(block + 4);
-  } else {
-    packet.adaptation_field = NULL;
-  }
-  if((packet.header->adaptation_field_control() & 0x01) != 0) {
-    if(packet.adaptation_field != NULL) {
-      packet.data = block+6+packet.adaptation_field->adaptation_field_length();
-    } else {
-      packet.data = block+4;
-    }
-  } else {
-    packet.data = NULL;
-  }
-
+  parseBlock(block,packet);
   for(std::set<TSPacketHandler *>::iterator it = handlers.begin();
       it != handlers.end();++it) {
     try {
@@ -152,3 +137,20 @@ void TSPacketReader::unregisterPacketHander(TSPacketHandler *handler) {
 TSPacketHandler::~TSPacketHandler() {
 }
 
+void TSPacketReader::parseBlock(uint8_t *block, TSPacket &packet) {
+  packet.header = (TSPacketHeader *)block;
+  if((packet.header->adaptation_field_control() & 0x02) != 0) {
+    packet.adaptation_field = (TSAdaptationField *)(block + 4);
+  } else {
+    packet.adaptation_field = NULL;
+  }
+  if((packet.header->adaptation_field_control() & 0x01) != 0) {
+    if(packet.adaptation_field != NULL) {
+      packet.data = block+6+packet.adaptation_field->adaptation_field_length();
+    } else {
+      packet.data = block+4;
+    }
+  } else {
+    packet.data = NULL;
+  }
+}
