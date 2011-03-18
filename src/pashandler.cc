@@ -60,5 +60,5 @@ void  PASHandler::handle(TSPacket *packet) {
 
   program = pas->entry(0)->program_number();
   pid = pas->entry(0)->PID();
-  out.write((char *)packet,188);
+  out.write((char *)packet->_data,188);
 }

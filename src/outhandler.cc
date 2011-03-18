@@ -7,5 +7,5 @@ bool OUTHandler::canHandle(TSPacket *packet) {
 }
 
 void OUTHandler::handle(TSPacket *packet) {
-  out.write((char *)packet, 188);
+  out.write((char *)packet->_data, 188);
 }
