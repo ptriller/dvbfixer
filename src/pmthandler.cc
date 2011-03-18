@@ -76,7 +76,7 @@ void PMTHandler::handle(TSPacket *packet) {
   TSPacketReader::parseBlock(newblock,newpacket);
   PMTTable *newpmt = (PMTTable *) (newpacket.data + newpacket.data[0] + 1 );
   
-  uint16_t newsize = 9;
+  uint16_t newsize = 9+newpmt->program_info_length();
   uint8_t *newentry = (uint8_t *)pmt->firstPMT();
   PMTEntry *entry = pmt->firstPMT();
   streams.clear();
@@ -102,16 +102,23 @@ void PMTHandler::handle(TSPacket *packet) {
     case 0x10:
     case 0x11:
     case 0x1b:
+      std::cout << "Adding: " <<  entry->elementary_PID() << std::endl;
       streams.insert(entry->elementary_PID());
       len = 5+entry->ES_info_length();
-      for(int i = 0; i < len;++i) *(newentry++) = entry->_data[i];
+      std::cout << "Kept len:  " << len << std::endl;
+      for(int i = 0; i < len;++i) newentry[i] = entry->_data[i];
+      newentry += len;
       newsize += len;
       break;
     default:
+      len = 5+entry->ES_info_length();
+      std::cout << "Skipped len:  " << len << std::endl;
       break;
     }
     entry = pmt->nextPMT(entry);
   }
+  std::cout << "Len: " << newsize + 4 << std::endl;
+  std::cout << "OldLen: " << pmt->section_length() << std::endl;
   newpmt->section_length(newsize+4);
   newpmt->crc32(crc32(newpmt->_data, newpmt->section_length()-1));
   out.write((char *)newblock,188);
