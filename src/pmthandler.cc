@@ -3,6 +3,7 @@
 #include "crc.h"
 #include <iostream>
 #include <string.h>
+#include <stdlib.h>
 
 struct PMTEntry {
   uint8_t _data[184];
@@ -11,7 +12,7 @@ struct PMTEntry {
   uint16_t elementary_PID() { uint16_t r = (_data[1] &0x1f) << 8; return r | _data[2]; }
   uint8_t reserved2() { return (_data[3] & 0xf0) >> 4; }
   uint16_t ES_info_length() { uint16_t r = (_data[3] & 0x0f) << 8; return r | _data[4]; }
-};
+} __attribute__((__packed__));
 
 struct PMTTable {
   uint8_t _data[183];
@@ -51,14 +52,14 @@ struct PMTTable {
 
   PMTEntry *firstPMT() {  
     uint8_t *e = _data+12+program_info_length(); 
-    return e < _data+section_length() ? (PMTEntry *)e : NULL; 
+    return e < _data+section_length()- 1  ? (PMTEntry *)e : NULL; 
   }
   PMTEntry *nextPMT(PMTEntry *p) {
     uint8_t *e = p->_data + 5+p->ES_info_length();
-    return e < _data+section_length() ? (PMTEntry *)e : NULL; 
+    return e < _data+section_length() - 1 ? (PMTEntry *)e : NULL; 
   }
   
-};
+} __attribute__((__packed__));
 
 
 bool PMTHandler::canHandle(TSPacket *packet) {
@@ -70,14 +71,14 @@ void PMTHandler::handle(TSPacket *packet) {
   uint8_t newblock[188];
   
   PMTTable *pmt = (PMTTable *) (packet->data + packet->data[0] + 1 );
-
-  memcpy(newblock,packet->_data,188);
-  TSPacket newpacket;
+  std::cout << "Size: " << (((uint8_t*)pmt) - ((uint8_t*)packet->header))+12+pmt->program_info_length() << std::endl;
+  memcpy(newblock, packet->_data,188); //(((uint8_t*)pmt) - ((uint8_t*)packet->header))+12+pmt->program_info_length() );
+  /*  TSPacket newpacket;
   TSPacketReader::parseBlock(newblock,newpacket);
   PMTTable *newpmt = (PMTTable *) (newpacket.data + newpacket.data[0] + 1 );
   
   uint16_t newsize = 9+newpmt->program_info_length();
-  uint8_t *newentry = (uint8_t *)pmt->firstPMT();
+  uint8_t *newentry = pmt->firstPMT()->_data;
   PMTEntry *entry = pmt->firstPMT();
   streams.clear();
   streams.insert(pmt->pcr_pid());
@@ -106,7 +107,7 @@ void PMTHandler::handle(TSPacket *packet) {
       streams.insert(entry->elementary_PID());
       len = 5+entry->ES_info_length();
       std::cout << "Kept len:  " << len << std::endl;
-      for(int i = 0; i < len;++i) newentry[i] = entry->_data[i];
+      //  for(int i = 0; i < len;++i) newentry[i] = entry->_data[i];
       newentry += len;
       newsize += len;
       break;
@@ -119,7 +120,11 @@ void PMTHandler::handle(TSPacket *packet) {
   }
   std::cout << "Len: " << newsize + 4 << std::endl;
   std::cout << "OldLen: " << pmt->section_length() << std::endl;
-  newpmt->section_length(newsize+4);
-  newpmt->crc32(crc32(newpmt->_data, newpmt->section_length()-1));
+  //  newpmt->section_length(newsize+4);
+  //  newpmt->crc32(crc32(newpmt->_data, newpmt->section_length()-1));
+  */
   out.write((char *)newblock,188);
+  //  out.close();
+  //  exit(0);
+
 }

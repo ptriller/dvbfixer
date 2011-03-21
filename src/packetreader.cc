@@ -109,12 +109,12 @@ bool TSPacketReader::fillBuffer() {
 
 
 void TSPacketReader::emitEvents(uint8_t *block) {
-  TSPacket packet;
-  parseBlock(block,packet);
+  TSPacket *packet;
+  packet = parseBlock(block);
   for(std::set<TSPacketHandler *>::iterator it = handlers.begin();
       it != handlers.end();++it) {
     try {
-      if((*it)->canHandle(&packet)) (*it)->handle(&packet);
+      if((*it)->canHandle(packet)) (*it)->handle(packet);
     } catch(std::invalid_argument &e) {
       std::cout << "Invalid packet, rewind." << std::endl;
       streak = 0;
@@ -122,6 +122,7 @@ void TSPacketReader::emitEvents(uint8_t *block) {
       //      std::reverse_copy(block,block+188, std::front_inserter(queue) );
     }
   }
+  delete packet;
 }
 
 
@@ -137,20 +138,8 @@ void TSPacketReader::unregisterPacketHander(TSPacketHandler *handler) {
 TSPacketHandler::~TSPacketHandler() {
 }
 
-void TSPacketReader::parseBlock(uint8_t *block, TSPacket &packet) {
-  packet.header = (TSPacketHeader *)block;
-  if((packet.header->adaptation_field_control() & 0x02) != 0) {
-    packet.adaptation_field = (TSAdaptationField *)(block + 4);
-  } else {
-    packet.adaptation_field = NULL;
-  }
-  if((packet.header->adaptation_field_control() & 0x01) != 0) {
-    if(packet.adaptation_field != NULL) {
-      packet.data = block+6+packet.adaptation_field->adaptation_field_length();
-    } else {
-      packet.data = block+4;
-    }
-  } else {
-    packet.data = NULL;
-  }
+TSPacket *TSPacketReader::parseBlock(uint8_t *block) {
+  TSPacket *packet =  new TSPacket(block);
+  packet->parse();
+  packet->validate();
 }
