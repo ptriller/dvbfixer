@@ -6,4 +6,5 @@
 
 dvbparserdir=..
 dvbparser_PROGRAMS=dvbparser
-dvbparser_SOURCES=stream.cc crc.cc tspacket.cc dvbparser.cc packetreader.cc
+dvbparser_SOURCES=stream.cc crc.cc tspacket.cc dvbparser.cc packetreader.cc \
+				  logger.cc

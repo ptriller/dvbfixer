@@ -3,15 +3,20 @@
 
 AC_PREREQ(2.50)
 AC_INIT(tssplitter, 1.0, ptriller@soapwars.de)
-AC_CONFIG_SRCDIR([src/main.c])
+AC_CONFIG_SRCDIR([src/dvbparser.cc])
 AM_INIT_AUTOMAKE   
 AM_CONFIG_HEADER([config.h])
 AC_CONFIG_FILES([Makefile
 	src/Makefile])
 
 # Checks for programs.
-AC_PROG_CC
 AC_PROG_CXX
+AC_PROG_CC
+AC_LANG([C++]) 
+#CXXFLAGS="$CXXFLAGS -std=gnu++0x" 
+CXXCPPFLAGS="$CXXCPPFLAGS -std=gnu++0x"
+CPPFLAGS="$CPPFLAGS -std=gnu++0x"
+AC_CHECK_HEADER(cstdint) 
 AC_SYS_LARGEFILE
 
 

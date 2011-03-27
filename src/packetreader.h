@@ -7,7 +7,7 @@
 #include <vector>
 #include <set>
 #include <stdexcept>
-#include <stdint.h>
+#include <cstdint>
 #include "tspacket.h"
 class StreamReader;
 
@@ -32,10 +32,11 @@ class TSPacketReader {
   std::deque<unsigned char> queue;
   unsigned int streak;
 
+//  TSPacket packet;
+
   std::set<uint16_t> pmt;
 
   std::set<TSPacketHandler *> handlers;
-
 
   void emitEvents(uint8_t *block);
 
@@ -53,7 +54,6 @@ class TSPacketReader {
 
   bool fillBuffer();
 
-  static TSPacket * parseBlock(uint8_t *block);
 };
 
 

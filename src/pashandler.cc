@@ -47,13 +47,13 @@ bool PASHandler::canHandle(TSPacket *packet) {
 
 void  PASHandler::handle(TSPacket *packet) {
   PASTable *pas = (PASTable *) (packet->data + packet->data[0] +1 );
-  std::cout << "Table: " << (int)pas->table_id() << " Syn: " << pas->section_syntax_indicator();
-  std::cout << " Zero: " << pas->zero() << " SecLen: " << pas->section_length() << std::endl;
-  std::cout << "Program: " << pas->entry(0)->program_number() << " PID: " << pas->entry(0)->PID() << std::endl;
-  std::cout << "CRC: 0x" << std::hex << pas->crc32() <<std::endl;
+  DEBUG("Table: " << (int)pas->table_id() << " Syn: " << pas->section_syntax_indicator());
+  DEBUG(" Zero: " << pas->zero() << " SecLen: " << pas->section_length())
+  DEBUG("Program: " << pas->entry(0)->program_number() << " PID: " << pas->entry(0)->PID());
+  DEBUG("CRC: 0x" << std::hex << pas->crc32());
   unsigned int crc1 = crc32(pas->_data, pas->section_length()-1);
 
-  std::cout << "CRC1: 0x" << std::hex << crc1 << std::dec << std::endl;
+  DEBUG("CRC1: 0x" << std::hex << crc1 << std::dec);
   if(crc1 != pas->crc32()) {
     throw std::invalid_argument("CRC Error in PAS packet !");
   }
