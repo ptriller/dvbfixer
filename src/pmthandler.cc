@@ -1,7 +1,6 @@
 #include "pmthandler.h"
 
 #include "crc.h"
-#include "workaround.h"
 #include <iostream>
 #include <string.h>
 #include <stdlib.h>

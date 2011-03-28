@@ -1,6 +1,8 @@
 #include "tspacket.h"
 #include "stream.h"
 #include "packetreader.h"
+#include "pashandler.h"
+#include "pmthandler.h"
 #include "logger.h"
 #include <iostream>
 
@@ -18,6 +20,8 @@ int main(int argc, char **argv) {
 
 	tsreader->init();
 
+
+	tsreader->registerPacketHandler(new PASHandler());
 	while(tsreader->readPacket()) { }
 
 	return 0;

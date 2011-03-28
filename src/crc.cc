@@ -51,7 +51,7 @@ static unsigned int crc_table[256] = {
 
 unsigned int crc32(const uint8_t *d, unsigned int len, unsigned int crc)
 {
-   register int i;
+   register unsigned int i;
    const unsigned char *u = d; // Saves '& 0xff'
 
    for (i=0; i<len; i++)

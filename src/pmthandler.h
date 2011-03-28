@@ -7,17 +7,13 @@
 
 class PMTHandler: public TSPacketHandler {
 public:
+	uint16_t pid;
 
-  std::set<uint16_t> streams;
+	PMTHandler(uint16_t pid):pid(pid) {}
 
-  uint16_t pid;
-  std::fstream &out;
+	virtual bool canHandle(TSPacket *);
 
-  PMTHandler(uint16_t pid, std::fstream &out):pid(pid),out(out) {}
-
-  virtual bool canHandle(TSPacket *);
-  
-  virtual void handle(TSPacket *);
+	virtual void handle(TSPacket *);
 
 };
 

@@ -53,7 +53,7 @@ am__installdirs = "$(DESTDIR)$(dvbparserdir)"
 PROGRAMS = $(dvbparser_PROGRAMS)
 am_dvbparser_OBJECTS = stream.$(OBJEXT) crc.$(OBJEXT) \
 	tspacket.$(OBJEXT) dvbparser.$(OBJEXT) packetreader.$(OBJEXT) \
-	logger.$(OBJEXT)
+	logger.$(OBJEXT) pashandler.$(OBJEXT)
 dvbparser_OBJECTS = $(am_dvbparser_OBJECTS)
 dvbparser_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -162,7 +162,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 dvbparserdir = ..
 dvbparser_SOURCES = stream.cc crc.cc tspacket.cc dvbparser.cc packetreader.cc \
-				  logger.cc
+				  logger.cc pashandler.cc
 
 all: all-am
 
@@ -249,6 +249,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dvbparser.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/logger.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/packetreader.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pashandler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stream.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tspacket.Po@am__quote@
 

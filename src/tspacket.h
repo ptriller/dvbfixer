@@ -3,11 +3,14 @@
 
 #include <cstdint>
 #include <cstddef>
+#include "crc.h"
 struct TSPacket {
 
 	uint8_t *_block;
 	uint8_t *_adaptionfield;
 	uint8_t *_payload;
+
+	TSPacket(uint8_t *block) : _block(block) {}
 
 	void block(uint8_t *block) { _block = block; }
 
@@ -54,7 +57,9 @@ struct TSPacket {
 };
 
 
-struct PASPacket: public TSPacket {
+struct TablePacket: public TSPacket {
+
+	TablePacket(uint8_t *block) : TSPacket(block) {}
 
 	uint8_t *_table;
 
@@ -62,7 +67,7 @@ struct PASPacket: public TSPacket {
 	virtual void parse();
 
 	uint8_t pointer_field() const { return _payload[0]; }
-	void pointer_filed(uint8_t pointer) { _payload[0] = pointer; _table = _payload + 1 + _payload[0]; }
+	void pointer_field(uint8_t pointer) { _payload[0] = pointer; _table = _payload + 1 + _payload[0]; }
 
 	uint8_t table_id() const { return _table[0]; }
 	void table_id(uint8_t id) { _table[0] = id; }
@@ -71,9 +76,49 @@ struct PASPacket: public TSPacket {
 
 	bool zero() const { return _table[1] & 0x40; }
 
-	uint8_t reserved() const { return (_table[1] & 0x30) >> 4; }
+	inline uint8_t reserved() const { return (_table[1] & 0x30) >> 4; }
 
 	uint16_t section_length() const { uint16_t r = (_table[1] & 0x0f) << 8; return r | _table[2]; }
+
+	uint32_t crc32() const {
+		int offset = section_length()-1;
+		uint32_t crc = _table[offset++];
+		crc = (crc << 8) | _table[offset++];
+		crc = (crc << 8) | _table[offset++];
+		return (crc << 8) |_table[offset];
+	}
+
+	void crc32(uint32_t crc) {
+		uint32_t offset = section_length()+2;
+		_table[offset--] = (crc & 0x000000ff);
+		_table[offset--] = (crc & 0x0000ff00) >> 8;
+		_table[offset--] = (crc & 0x00ff0000) >> 16;
+		_table[offset] = (crc >> 24);
+
+	}
+
+	uint32_t calc_crc32() const {
+		return ::crc32(_table, section_length()-1);
+	}
+};
+
+struct PASEntry {
+
+	uint8_t _data[4];
+
+	uint16_t program_number() const { uint16_t r = _data[0] << 8; return r | _data[1];  } // 16
+
+	uint8_t reserved() const {  return (_data[2] & 0xe0) >> 5; } // 3
+
+	uint16_t PID() const { uint16_t r = (_data[2] & 0x1f) << 8; return r | _data[3];  } // 13
+};
+
+
+struct PasPacket : public TablePacket {
+
+	PasPacket(uint8_t *block) : TablePacket(block) {}
+
+	virtual void validate() const;
 
 	uint16_t transport_stream_id() const { uint16_t r = (_table[3] << 8); return r | _table[4]; }
 
@@ -87,56 +132,46 @@ struct PASPacket: public TSPacket {
 
 	uint8_t last_section_number() const { return _table[7]; }
 
+	uint32_t entry_count() const { return (section_length() - 9)/4; }
+
+	PASEntry *entry(uint8_t i) { return reinterpret_cast<PASEntry *>(_table + 8+4*i); }
+
 };
 
-/*
-struct PASEntry {
-  uint8_t _data[4];
-  uint16_t program_number() { uint16_t r = _data[0] << 8; return r | _data[1];  } // 16
-  uint8_t reserved() {  return (_data[2] & 0xe0) >> 5; } // 3
-  uint16_t PID() { uint16_t r = (_data[2] & 0x1f) << 8; return r | _data[3];  } // 13
+
+
+struct PmtPacket : public TablePacket {
+
+	uint8_t *_entries;
+
+	PmtPacket(uint8_t *block) : TablePacket(block) {}
+
+	virtual void validate() const;
+
+	virtual void parse();
+
+	uint16_t program_number() const { uint16_t r = _table[3] << 8; return r | _table[4]; }
+
+	uint8_t reserved2() const { return (_table[5] & 0xc0) >> 6; }
+
+	uint8_t version_number() const { return (_table[5] & 0x3e) >> 1; }
+
+	bool current_next_indicator() const { return (_table[5] & 0x01) != 0; }
+
+	uint8_t section_number() const { return _table[6]; }
+
+	uint8_t last_section_number() const { return _table[7]; }
+
+	uint8_t reserved3() const { return (_table[8] & 0xe0) >> 5; }
+
+	uint8_t pcr_pid() const { uint16_t r = (_table[8] & 0x1f) << 8; return r | _table[9]; }
+
+	uint8_t reserved4() const { return (_table[10] & 0xf0) >> 4; }
+
+	uint16_t program_info_length() const { uint16_t r = (_table[10] & 0x0f) << 8; return r | _table[11]; }
+
+	void program_info_length(uint16_t len) { _table[11] = (uint8_t)(len & 0x00ff); _table[10] = ((len >> 8) % 0x0f) | (_table[10] & 0xf0); }
+
+
 };
-
-class PASPacket: public TSPacket {
-public:
-  PASPacket(uint8_t *block):TSPacket(block) {}
-
-  virtual void validate();
-
-  uint8_t table_id() { return _payload[_payload[0]+1]; } // 8
-  void    table_id(uint8_t id) { _payload[_payload[0]+1]=id; } // 8
-
-  bool section_syntax_indicator() { return (_payload[_payload[0]+2] & 0x80); } // 1
-  void section_syntax_indicator(bool ssi) { _payload[_payload[0]+2] =  ssi ? (_payload[_payload[0]+2] | 0x80) : (_payload[_payload[0]+2] & 0x7f); } 
-
-  bool zero() { return (_payload[_payload[0]+2] & 0x40) != 0; } // 1
-  void zero(bool z) { _payload[5] = z ? (_payload[_payload[0]+2] | 0x40):(_payload[_payload[0]+2] & 0xbf); } // 1
-
-  uint8_t reserved() { return (_payload[_payload[0]+2] & 0x30) >> 4; } // 2
-  void    reserved(uint8_t rs) { _payload[_payload[0]+2] = (_payload[_payload[0]+2] & 0xcf ) | ((rs &0x03) << 4); }
-
-  uint16_t section_length() { uint16_t r = (_payload[_payload[0]+2] & 0x0f) << 8; return r | _payload[_payload[0]+3];  } // 12
-  void     section_length(uint16_t sl) { 
-    _payload[_payload[0]+3] = (sl & 0x00ff); 
-    _payload[_payload[0]+2] = (_payload[_payload[0]+2] & 0xf0) | ((sl & 0x0f00) >> 8); 
-  }
-
-  uint16_t transport_stream_id() { return (_data[3] << 8) | _data[4]; }
-  void     transport_stream_id(uint16_t tsi) { return (_data[3] << 8) | _data[4]; }
-
-  uint8_t reserved2() { return (_data[5] & 0xc0) >> 6; }
-  uint8_t version_number() { return (_data[5] & 0x3e) >> 1; }
-  bool current_next_indicator() { return (_data[5] & 0x01) != 0; }
-  uint8_t section_number() { return _data[6]; }
-  uint8_t last_section_number() { return _data[7]; }
-  PASEntry *entry(uint8_t i) { return (PASEntry *)(&_data[8+4*i]); }
-  uint32_t crc32() {
-    int offset = section_length()-1;
-    uint32_t crc = _data[offset++];
-    crc = (crc << 8) | _data[offset++];
-    crc = (crc << 8) | _data[offset++];
-    return (crc << 8) |_data[offset++];
-  }
-};
- */
 #endif

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configurations>
 <configuration id="org.eclipse.linuxtools.cdt.autotools.core.configuration.build.1561825065">
-<option id="configure" value="CXX=&quot;g++-4.5.2&quot; CC=&quot;gcc-4.5.2&quot; CPP=&quot;cpp-4.5.2&quot;  CXXFLAGS=&quot;-O2 -Wall&quot; configure"/>
+<option id="configure" value="CXX=&quot;g++-4.5.2&quot; CC=&quot;gcc-4.5.2&quot; CPP=&quot;cpp-4.5.2&quot;  CXXFLAGS=&quot;-O2 -Wall -Wextra -pedantic&quot; configure"/>
 <option id="configdir" value=""/>
 <option id="cache-file" value=""/>
 <option id="help" value="false"/>
@@ -35,7 +35,7 @@
 <option id="autogenOpts" value=""/>
 </configuration>
 <configuration id="org.eclipse.linuxtools.cdt.autotools.core.configuration.build.1561825065.1878489791">
-<option id="configure" value="CXX=&quot;g++-4.5.2&quot; CC=&quot;gcc-4.5.2&quot; CPP=&quot;cpp-4.5.2&quot; CXXFLAGS=&quot;-g -O0 -Wall&quot; configure"/>
+<option id="configure" value="CXX=&quot;g++-4.5.2&quot; CC=&quot;gcc-4.5.2&quot; CPP=&quot;cpp-4.5.2&quot; CXXFLAGS=&quot;-g -O0 -Wall -Wextra -pedantic&quot; configure"/>
 <option id="configdir" value=""/>
 <option id="cache-file" value=""/>
 <option id="help" value="false"/>

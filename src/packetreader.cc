@@ -105,15 +105,14 @@ bool TSPacketReader::fillBuffer() {
 
 
 void TSPacketReader::emitEvents(uint8_t *block) {
-	TSPacket packet;
-	packet.block(block);
+	TSPacket packet(block);
 	packet.parse();
 	packet.validate();
 	for(auto it = handlers.begin(); it != handlers.end();++it) {
 		try {
 			if((*it)->canHandle(&packet)) (*it)->handle(&packet);
 		} catch(std::invalid_argument &e) {
-			WARN("Invalid packet, rewind.");
+			WARN("Invalid packet, rewind. :" << e.what() );
 			streak = 0;
 			for(uint8_t *b = block+187; b != block;--b) queue.push_front(*b);
 			//      std::reverse_copy(block,block+188, std::front_inserter(queue) );
