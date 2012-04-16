@@ -1,5 +1,6 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
+#
 
 AC_PREREQ(2.50)
 AC_INIT(tssplitter, 1.0, ptriller@soapwars.de)
